@@ -1,7 +1,7 @@
 {
   "name": "@effect-messaging/core",
-  "version": "0.2.43",
   "type": "module",
+  "version": "0.2.43",
   "license": "MIT",
   "description": "Message broker abstractions for Effect",
   "homepage": "https://github.com/spiko-tech/effect-messaging",
@@ -27,25 +27,49 @@
     "pubsub",
     "messaging"
   ],
+  "sideEffects": [],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts",
+    "./internal/*": null,
+    "./index": null,
+    "./*/index": null
+  },
+  "files": [
+    "src/**/*.ts",
+    "dist/**/*.js",
+    "dist/**/*.js.map",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map",
+    "AGENTS.md",
+    "CLAUDE.md"
+  ],
   "publishConfig": {
     "access": "public",
-    "directory": "dist",
-    "provenance": true
+    "provenance": true,
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./dist/index.js",
+      "./*": "./dist/*.js",
+      "./internal/*": null,
+      "./index": null,
+      "./*/index": null
+    }
   },
   "scripts": {
-    "codegen": "build-utils prepare-v2",
-    "build": "pnpm build-esm && pnpm build-annotate && pnpm build-cjs && build-utils pack-v2",
-    "build-esm": "tsc -b tsconfig.build.json",
-    "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
-    "build-annotate": "babel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps",
+    "codegen": "node ../../scripts/codegen.mjs . 'src/**/index.ts'",
+    "build": "tsc -b tsconfig.json && pnpm babel",
+    "babel": "babel dist --plugins annotate-pure-calls --out-dir dist --source-maps",
     "check": "tsc -b tsconfig.json",
     "test": "vitest",
     "coverage": "vitest --coverage"
   },
   "devDependencies": {
-    "effect": "^3.21.0"
+    "@effect/vitest": "4.0.0-rc.118",
+    "effect": "4.0.0-rc.118"
   },
   "peerDependencies": {
-    "effect": "^3.19.19"
+    "effect": "^4.0.0-rc.118"
   }
 }
