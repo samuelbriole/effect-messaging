@@ -7,7 +7,6 @@ import * as Fiber from "effect/Fiber"
 import * as Headers from "effect/http/Headers"
 import * as HttpTraceContext from "effect/http/HttpTraceContext"
 import * as Option from "effect/Option"
-import * as PubSub from "effect/PubSub"
 import * as Queue from "effect/Queue"
 import * as Schedule from "effect/Schedule"
 import * as Sink from "effect/Sink"
@@ -16,7 +15,7 @@ import * as SubscriptionRef from "effect/SubscriptionRef"
 import * as AMQPConnection from "../AMQPConnection.ts"
 import type { AMQPConnectionError } from "../AMQPError.ts"
 import { AMQPChannelError } from "../AMQPError.ts"
-import { closeStream, errorStream } from "./closeStream.ts"
+import { closeStream, errorStream, resourceStates, trackResource } from "./closeStream.ts"
 
 const DEFAULT_PREFETCH = 50
 
@@ -86,6 +85,7 @@ const getOrWaitChannel = Effect.gen(function*() {
   return yield* SubscriptionRef.changes(channelRef).pipe(
     Stream.filter(Option.isSome),
     Stream.map((channel) => channel.value),
+    Stream.filter((channel) => !resourceStates.has(channel)),
     Stream.take(1),
     Stream.run(Sink.last()),
     Effect.flatMap(Option.match({
@@ -104,12 +104,7 @@ export const initiateChannel = Effect.gen(function*() {
     Effect.gen(function*() {
       const connection = yield* AMQPConnection.AMQPConnection
       const channel = yield* confirm ? connection.createConfirmChannel : connection.createChannel
-      channel.on("close", () => {
-        const unavailable = Option.none<Channel>()
-        channelRef.value = unavailable
-        PubSub.publishUnsafe(channelRef.pubsub, unavailable)
-      })
-      return Option.some(channel)
+      return Option.some(trackResource(channel))
     }))
   yield* Effect.logDebug(`AMQPChannel: channel created`)
 }).pipe(
@@ -129,7 +124,11 @@ export const closeChannel = Effect.fn("AMQPChannel.closeChannel")(function*(
   yield* SubscriptionRef.updateEffect(channelRef, (channel) =>
     Effect.gen(function*() {
       if (Option.isSome(channel)) {
-        if (confirm) {
+        const unavailable = resourceStates.has(channel.value)
+        if (removeAllListeners) {
+          resourceStates.set(channel.value, "shutdown")
+        }
+        if (confirm && !unavailable) {
           // `removeAllListeners` also removes amqplib's own ack/nack listeners, so drain confirms first
           yield* Effect.tryPromise(() => (channel.value as ConfirmChannel).waitForConfirms()).pipe(
             disconnect, // finalizers are uninterruptible: without this the timeout could not fire
@@ -326,6 +325,7 @@ export const consume = (queueName: string, options?: { readonly prefetch?: numbe
     return SubscriptionRef.changes(channelRef).pipe(
       Stream.filter(Option.isSome),
       Stream.map((channel) => channel.value),
+      Stream.filter((channel) => !resourceStates.has(channel)),
       Stream.flatMap(
         (channel) =>
           Stream.callback<ConsumeMessage, AMQPChannelError>((queue) =>

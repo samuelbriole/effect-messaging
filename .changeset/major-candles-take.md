@@ -7,6 +7,9 @@
 Migrate all messaging packages to Effect 4.0.0-rc.118 and remove the @effect/platform peer dependency.
 Service keys use Context.Service and duration options use Duration.Input.
 
+Fix AMQP recovery with Effect 4.0.0-rc.118 and amqplib 2.2.0 by tracking resource lifecycle synchronously
+and cleaning up scoped event listeners. Distinguish unexpected closure from intentional shutdown.
+
 Publish ESM-only packages with explicit public exports and declaration validation.
 Internal and index subpaths are not exported.
 

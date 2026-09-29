@@ -4,14 +4,13 @@ import * as Context from "effect/Context"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
-import * as PubSub from "effect/PubSub"
 import * as Redacted from "effect/Redacted"
 import * as Schedule from "effect/Schedule"
 import * as Sink from "effect/Sink"
 import * as Stream from "effect/Stream"
 import * as SubscriptionRef from "effect/SubscriptionRef"
 import { AMQPConnectionError } from "../AMQPError.ts"
-import { closeStream, errorStream } from "./closeStream.ts"
+import { closeStream, errorStream, resourceStates, trackResource } from "./closeStream.ts"
 
 const ATTR_SERVER_ADDRESS = "server.address" as const
 const ATTR_SERVER_PORT = "server.port" as const
@@ -56,6 +55,7 @@ const getOrWaitConnection = Effect.gen(function*() {
   return yield* SubscriptionRef.changes(connectionRef).pipe(
     Stream.filter(Option.isSome),
     Stream.map((connection) => connection.value),
+    Stream.filter((connection) => !resourceStates.has(connection)),
     Stream.take(1),
     Stream.run(Sink.last()),
     Effect.flatMap(Option.match({
@@ -87,12 +87,7 @@ export const initiateConnection = Effect.gen(function*() {
         try: () => connect(normalizedUrl, socketOptions),
         catch: (error) => new AMQPConnectionError({ reason: "Failed to establish connection", cause: error })
       })
-      connection.on("close", () => {
-        const unavailable = Option.none<ChannelModel>()
-        connectionRef.value = unavailable
-        PubSub.publishUnsafe(connectionRef.pubsub, unavailable)
-      })
-      return Option.some(connection)
+      return Option.some(trackResource(connection))
     }))
   yield* Effect.logDebug(`AMQPConnection: connection established`)
 }).pipe(
@@ -113,6 +108,7 @@ export const closeConnection = Effect.fn("AMQPConnection.closeConnection")(funct
     Effect.gen(function*() {
       if (Option.isSome(connection)) {
         if (removeAllListeners) {
+          resourceStates.set(connection.value, "shutdown")
           connection.value.removeAllListeners()
         }
         yield* annotateSpanWithConnectionProps(connection.value)
