@@ -1,5 +1,7 @@
+import * as Effect from "effect/Effect"
 import { AMQPProtocolError } from "../AMQPError.ts"
 import type * as AMQPTypes from "../AMQPTypes.ts"
+import * as Protocol from "./protocol.ts"
 
 export interface Frame {
   readonly type: number
@@ -348,91 +350,12 @@ const readField = (reader: Reader, depth: number): AMQPTypes.FieldValue => {
   }
 }
 
-// Consecutive bit fields share an octet, least significant bit first.
-type Kind = "u8" | "u16" | "u32" | "u64" | "short" | "text" | "bytes" | "table" | "bit"
-type Spec = ReadonlyArray<readonly [string, Kind]>
-const specs = new Map<string, Spec>()
-const define = (classId: number, methodId: number, description = ""): void => {
-  specs.set(
-    `${classId}:${methodId}`,
-    description === "" ? [] : description.split(" ").map((field) => {
-      const [name, kind] = field.split(":")
-      return [name, kind as Kind] as const
-    })
-  )
+/** Encode a field table independently of any method envelope. */
+export const encodeFieldTable = (table: AMQPTypes.FieldTable): Uint8Array => {
+  const writer = new Writer()
+  writeTable(writer, table, 0)
+  return writer.finish()
 }
-
-define(10, 10, "versionMajor:u8 versionMinor:u8 serverProperties:table mechanisms:text locales:text")
-define(10, 11, "clientProperties:table mechanism:short response:bytes locale:short")
-define(10, 30, "channelMax:u16 frameMax:u32 heartbeat:u16")
-define(10, 31, "channelMax:u16 frameMax:u32 heartbeat:u16")
-define(10, 40, "virtualHost:short reserved1:short outOfBand:bit")
-define(10, 41, "reserved1:short")
-define(10, 50, "replyCode:u16 replyText:short classId:u16 methodId:u16")
-define(10, 51)
-define(10, 60, "reason:short")
-define(10, 61)
-define(10, 70, "newSecret:bytes reason:short")
-define(10, 71)
-define(20, 10, "reserved1:short")
-define(20, 11, "reserved1:text")
-define(20, 20, "active:bit")
-define(20, 21, "active:bit")
-define(20, 40, "replyCode:u16 replyText:short classId:u16 methodId:u16")
-define(20, 41)
-define(
-  40,
-  10,
-  "reserved1:u16 exchange:short type:short passive:bit durable:bit autoDelete:bit internal:bit noWait:bit arguments:table"
-)
-define(40, 11)
-define(40, 20, "reserved1:u16 exchange:short ifUnused:bit noWait:bit")
-define(40, 21)
-define(40, 30, "reserved1:u16 destination:short source:short routingKey:short noWait:bit arguments:table")
-define(40, 31)
-define(40, 40, "reserved1:u16 destination:short source:short routingKey:short noWait:bit arguments:table")
-define(40, 51)
-define(
-  50,
-  10,
-  "reserved1:u16 queue:short passive:bit durable:bit exclusive:bit autoDelete:bit noWait:bit arguments:table"
-)
-define(50, 11, "queue:short messageCount:u32 consumerCount:u32")
-define(50, 20, "reserved1:u16 queue:short exchange:short routingKey:short noWait:bit arguments:table")
-define(50, 21)
-define(50, 30, "reserved1:u16 queue:short noWait:bit")
-define(50, 31, "messageCount:u32")
-define(50, 40, "reserved1:u16 queue:short ifUnused:bit ifEmpty:bit noWait:bit")
-define(50, 41, "messageCount:u32")
-define(50, 50, "reserved1:u16 queue:short exchange:short routingKey:short arguments:table")
-define(50, 51)
-define(60, 10, "prefetchSize:u32 prefetchCount:u16 global:bit")
-define(60, 11)
-define(
-  60,
-  20,
-  "reserved1:u16 queue:short consumerTag:short noLocal:bit noAck:bit exclusive:bit noWait:bit arguments:table"
-)
-define(60, 21, "consumerTag:short")
-define(60, 30, "consumerTag:short noWait:bit")
-define(60, 31, "consumerTag:short")
-define(60, 40, "reserved1:u16 exchange:short routingKey:short mandatory:bit immediate:bit")
-define(60, 50, "replyCode:u16 replyText:short exchange:short routingKey:short")
-define(60, 60, "consumerTag:short deliveryTag:u64 redelivered:bit exchange:short routingKey:short")
-define(60, 70, "reserved1:u16 queue:short noAck:bit")
-define(60, 71, "deliveryTag:u64 redelivered:bit exchange:short routingKey:short messageCount:u32")
-define(60, 72, "reserved1:short")
-define(60, 80, "deliveryTag:u64 multiple:bit")
-define(60, 90, "deliveryTag:u64 requeue:bit")
-define(60, 100, "requeue:bit")
-define(60, 110, "requeue:bit")
-define(60, 111)
-define(60, 120, "deliveryTag:u64 multiple:bit requeue:bit")
-define(85, 10, "noWait:bit")
-define(85, 11)
-
-const getSpec = (classId: number, methodId: number): Spec =>
-  specs.get(`${classId}:${methodId}`) ?? fail(`Unsupported method ${classId}:${methodId}`)
 
 export const encodeFrame = (type: number, channel: number, payload: Uint8Array): Uint8Array => {
   integer(channel, 0, 65535)
@@ -449,13 +372,27 @@ export const encodeFrame = (type: number, channel: number, payload: Uint8Array):
   return bytes
 }
 
-export const encodeMethod = (
+export const encodeMethod: {
+  (channel: number, method: Protocol.MethodDescriptor, fields?: Record<string, AMQPTypes.FieldValue>): Uint8Array
+  (
+    channel: number,
+    classId: number,
+    methodId: number,
+    fields?: Record<string, AMQPTypes.FieldValue>
+  ): Uint8Array
+} = (
   channel: number,
-  classId: number,
-  methodId: number,
-  fields: Record<string, AMQPTypes.FieldValue> = {}
+  methodOrClassId: Protocol.MethodDescriptor | number,
+  fieldsOrMethodId?: Record<string, AMQPTypes.FieldValue> | number,
+  rawFields: Record<string, AMQPTypes.FieldValue> = {}
 ): Uint8Array => {
-  const spec = getSpec(classId, methodId)
+  const method = typeof methodOrClassId === "number"
+    ? Protocol.lookup(methodOrClassId, fieldsOrMethodId as number)
+    : methodOrClassId
+  const fields = typeof methodOrClassId === "number"
+    ? rawFields
+    : (fieldsOrMethodId ?? {}) as Record<string, AMQPTypes.FieldValue>
+  const { classId, methodId, fields: spec } = method
   const writer = new Writer()
   writer.u16(classId)
   writer.u16(methodId)
@@ -496,7 +433,7 @@ export const decodeMethod = (payload: Uint8Array): Method => {
   const reader = new Reader(payload)
   const classId = reader.u16()
   const methodId = reader.u16()
-  const spec = getSpec(classId, methodId)
+  const spec = Protocol.lookup(classId, methodId).fields
   const fields: Record<string, AMQPTypes.FieldValue> = {}
   let bits = 0
   let bitCount = 0
@@ -525,7 +462,24 @@ export const decodeMethod = (payload: Uint8Array): Method => {
   return { classId, methodId, fields }
 }
 
-const properties: ReadonlyArray<readonly [keyof AMQPTypes.MessageProperties, Kind]> = [
+/** Parse wire bytes and validate decoded fields in the typed failure channel. @since 0.8.0 */
+export const decodeMethodEffect = Effect.fnUntraced(function*(payload: Uint8Array): Effect.fn.Return<
+  Method,
+  AMQPProtocolError
+> {
+  const method = yield* Effect.try({
+    try: () => decodeMethod(payload),
+    catch: (cause) =>
+      cause instanceof AMQPProtocolError ? cause : new AMQPProtocolError({
+        reason: "Invalid method payload",
+        cause
+      })
+  })
+  const fields = yield* Protocol.decodeFields(Protocol.lookup(method.classId, method.methodId), method.fields)
+  return { ...method, fields }
+})
+
+const properties: ReadonlyArray<readonly [keyof AMQPTypes.MessageProperties, Protocol.FieldKind]> = [
   ["contentType", "short"],
   ["contentEncoding", "short"],
   ["headers", "table"],

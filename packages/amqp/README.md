@@ -132,6 +132,27 @@ The subscriber retains Ack/Nack/Reject responses, tracing and handler timeouts,
 and bounds handler concurrency across reconnects while letting running handlers
 finish. Obsolete settlements are handled as session-loss bookkeeping.
 
+## Internal module ownership
+
+The native implementation concentrates three invariant sets behind internal interfaces:
+
+- **Protocol vocabulary:** named methods, wire field layouts, expected replies, and
+  Schema-validated decoded fields have one owner. Method schemas derive from the
+  same field layouts, and remote decoding exposes typed Effect failures. The binary
+  codec retains responsibility for AMQP framing and encoding, not transport or
+  recovery policy. Pure byte operations stay synchronous; admission and retirement
+  remain atomic.
+- **Delivery settlement:** message identity, original channel sessions, outstanding
+  delivery tags, revocation, and duplicate settlement have one owner. Validation,
+  command admission, and settlement commit run synchronously; failed admission
+  does not consume the delivery's settlement authority.
+- **Desired topology:** stable queue references, configuration snapshots,
+  cross-channel deletion rules, and restoration order have one owner. All channel
+  declarations precede bindings and consumers. Live mailboxes and handler lifetimes
+  remain with the channel implementation, not the desired-topology registry.
+
+These modules do not change the public interface or introduce publish replay.
+
 ## Migration from the amqplib-backed interface
 
 - Move URL/Node transport construction from `AMQPConnection.layer(url, options)`
