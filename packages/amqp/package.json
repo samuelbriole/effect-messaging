@@ -63,14 +63,18 @@
   },
   "devDependencies": {
     "@effect-messaging/core": "workspace:^",
+    "@effect/platform-node": "4.0.0-rc.118",
     "@effect/vitest": "4.0.0-rc.118",
     "@types/node": "^26.6.3",
-    "amqplib": "^2.2.0",
     "effect": "4.0.0-rc.118"
   },
   "peerDependencies": {
     "@effect-messaging/core": "workspace:^",
-    "amqplib": "^2.2.0",
+    "@effect/platform-node": "^4.0.0-rc.118",
     "effect": "^4.0.0-rc.118"
+  },
+  "peerDependenciesMeta": {
+    "@effect-messaging/core": { "optional": true },
+    "@effect/platform-node": { "optional": true }
   }
 }
