@@ -150,7 +150,6 @@ export const closeChannel = Effect.fn("AMQPChannel.closeChannel")(function*(
 
             // `removeAllListeners` also removes amqplib's own ack/nack listeners, so drain confirms first
             return Effect.tryPromise(() => (resource as ConfirmChannel).waitForConfirms()).pipe(
-              disconnect, // finalizers are uninterruptible: without this the timeout could not fire
               Effect.timeout(confirmTimeout),
               Effect.ignore
             )

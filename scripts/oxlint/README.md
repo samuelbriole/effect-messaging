@@ -1,6 +1,6 @@
 # scripts/oxlint
 
-Vendored copy of Effect's private oxlint JS plugin (`@effect/oxc`).
+Vendored subset of Effect's private oxlint JS plugin (`@effect/oxc`).
 
 These rules are required so that `oxlint` can enforce Effect's repository
 conventions locally:
@@ -12,11 +12,10 @@ conventions locally:
   `index` file.
 - `effect/no-bigint-literals`
 - `effect/no-opaque-instance-fields`
-- `effect/no-unused-internal`
 
 ## Attribution
 
-Vendored verbatim (aside from this attribution header) from the Effect
+Rule implementations vendored verbatim (aside from attribution headers) from the Effect
 repository, package `packages/tools/oxc`:
 
 - Repository: https://github.com/Effect-TS/effect

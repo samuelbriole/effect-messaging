@@ -1,5 +1,6 @@
 // Packs every package the way it is published and validates the *real* packed
 // artifacts end-to-end:
+// Run after `pnpm build`, which emits stripped release declarations to `dist`.
 //
 //   1. `pnpm pack` each package (which applies `publishConfig.exports`).
 //   2. Install the tarballs into a throwaway project.

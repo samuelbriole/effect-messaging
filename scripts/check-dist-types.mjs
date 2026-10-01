@@ -1,6 +1,6 @@
 // Type-checks the built `dist` declarations the way a consumer with
-// `skipLibCheck: false` does. Run after `pnpm build` (with `stripInternal`
-// enabled, see `scripts/set-strip-internal.mjs`) to catch public declarations
+// `skipLibCheck: false` does. Run after `pnpm build` (which emits stripped
+// declarations via `tsconfig.release.json`) to catch public declarations
 // that reference `@internal` symbols or otherwise leak into the published types.
 import { execFileSync } from "node:child_process"
 import * as Fs from "node:fs"

@@ -250,6 +250,18 @@ const runnable = program.pipe(
 Effect.runPromise(runnable)
 ```
 
+## Development builds
+
+`pnpm check` uses unstripped declarations in each package's `build/` directory so
+project-reference tests can access internal types. `pnpm build` also builds the
+release-specific `tsconfig.release.json` projects, emitting stripped declarations
+and Babel-processed JavaScript to `dist/`. The two modes use separate output
+directories and incremental caches; neither modifies tracked configuration.
+
+After building, run `pnpm check-dist-types` and `pnpm check-packages` to validate
+the release declarations and packed artifacts. Workspace exports still resolve
+to TypeScript sources; published exports resolve to `dist/`.
+
 ## Roadmap
 
 ### Common abstractions for message brokers `@effect-messaging/core`

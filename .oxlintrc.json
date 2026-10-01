@@ -32,10 +32,6 @@
     }],
     "effect/no-js-extension-imports": "error",
     "effect/no-opaque-instance-fields": "error",
-    // Requires the TypeScript compiler API (typescript 5.x/6.x) at runtime.
-    // This repository pins typescript 7.0.2 (native port) which does not
-    // expose `ts.createSourceFile`, so the rule is kept vendored but off.
-    "effect/no-unused-internal": "off",
     // Import rules
     "typescript/consistent-type-imports": ["error", { "fixStyle": "separate-type-imports" }],
     "typescript/no-import-type-side-effects": "error",
