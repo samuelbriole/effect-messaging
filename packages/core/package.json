@@ -1,25 +1,7 @@
 {
   "name": "@effect-messaging/core",
-  "type": "module",
   "version": "0.2.43",
-  "license": "MIT",
   "description": "Message broker abstractions for Effect",
-  "homepage": "https://github.com/spiko-tech/effect-messaging",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/spiko-tech/effect-messaging.git",
-    "directory": "packages/core"
-  },
-  "bugs": {
-    "url": "https://github.com/spiko-tech/effect-messaging/issues"
-  },
-  "tags": [
-    "typescript",
-    "publisher",
-    "subscriber",
-    "pubsub",
-    "messaging"
-  ],
   "keywords": [
     "typescript",
     "publisher",
@@ -27,7 +9,18 @@
     "pubsub",
     "messaging"
   ],
+  "homepage": "https://github.com/spiko-tech/effect-messaging",
+  "bugs": {
+    "url": "https://github.com/spiko-tech/effect-messaging/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spiko-tech/effect-messaging.git",
+    "directory": "packages/core"
+  },
+  "license": "MIT",
   "sideEffects": [],
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": "./src/index.ts",
@@ -45,6 +38,21 @@
     "AGENTS.md",
     "CLAUDE.md"
   ],
+  "scripts": {
+    "codegen": "node ../../scripts/codegen.mjs . 'src/**/index.ts'",
+    "build": "tsc -b tsconfig.json && pnpm babel",
+    "babel": "babel dist --plugins annotate-pure-calls --out-dir dist --source-maps",
+    "check": "tsc -b tsconfig.json",
+    "test": "vitest",
+    "coverage": "vitest --coverage"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.0",
+    "effect": "4.0.0"
+  },
+  "peerDependencies": {
+    "effect": "^4.0.0"
+  },
   "publishConfig": {
     "access": "public",
     "provenance": true,
@@ -57,19 +65,11 @@
       "./*/index": null
     }
   },
-  "scripts": {
-    "codegen": "node ../../scripts/codegen.mjs . 'src/**/index.ts'",
-    "build": "tsc -b tsconfig.json && pnpm babel",
-    "babel": "babel dist --plugins annotate-pure-calls --out-dir dist --source-maps",
-    "check": "tsc -b tsconfig.json",
-    "test": "vitest",
-    "coverage": "vitest --coverage"
-  },
-  "devDependencies": {
-    "@effect/vitest": "4.0.0-rc.118",
-    "effect": "4.0.0-rc.118"
-  },
-  "peerDependencies": {
-    "effect": "^4.0.0-rc.118"
-  }
+  "tags": [
+    "typescript",
+    "publisher",
+    "subscriber",
+    "pubsub",
+    "messaging"
+  ]
 }

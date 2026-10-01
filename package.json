@@ -2,9 +2,11 @@
   "name": "effect-messaging",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
-  "packageManager": "pnpm@12.8.1",
   "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "type": "module",
   "scripts": {
     "prepare": "effect-tsgo patch --typescript --force",
     "clean": "node scripts/clean.mjs",
@@ -17,41 +19,38 @@
     "check-packages": "node scripts/check-packages.mjs",
     "check-dist-types": "node scripts/check-dist-types.mjs",
     "check:watch": "tsc -b tsconfig.json -w",
-    "check-recursive": "pnpm --recursive exec tsc -b tsconfig.json",
+    "check-recursive": "pnpm --recursive --filter './packages/*' exec tsc -b tsconfig.json",
     "lint": "oxlint -f unix && dprint check",
     "lint-fix": "oxlint --fix && dprint fmt",
-    "docgen": "pnpm --recursive exec docgen && node scripts/docs.mjs",
+    "docgen": "node tools/docgen/run.mjs && node scripts/docs.mjs",
     "test-types": "tstyche --target '>=5.9'",
     "changeset-version": "changeset version",
     "changeset-publish": "pnpm check && pnpm test-types && pnpm lint && node scripts/set-strip-internal.mjs && pnpm build && pnpm check-dist-types && pnpm check-packages && pnpm test run && changeset publish"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "engines": {
-    "node": ">=24.11.0",
-    "pnpm": ">=12"
   },
   "devDependencies": {
     "@babel/cli": "^8.0.6",
     "@babel/core": "^8.0.6",
     "@changesets/changelog-github": "^1.0.1",
     "@changesets/cli": "^3.0.3",
-    "@effect/docgen": "^0.5.2",
-    "@effect/tsgo": "0.47.0",
-    "@effect/vitest": "4.0.0-rc.118",
+    "@effect/tsgo": "0.47.2",
+    "@effect/vitest": "4.0.0",
     "@oxlint/plugins": "^1.86.0",
     "@types/node": "^26.6.3",
-    "@vitest/coverage-v8": "^5.0.2",
+    "@vitest/coverage-v8": "^5.0.3",
     "babel-plugin-annotate-pure-calls": "^0.5.0",
     "dprint": "^0.58.0",
-    "effect": "4.0.0-rc.118",
+    "effect": "4.0.0",
     "glob": "^13.0.6",
     "madge": "^8.0.0",
     "oxlint": "^1.86.0",
     "tstyche": "^7.2.5",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.3"
+  },
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=24.11.0",
+    "pnpm": ">=12"
   }
 }

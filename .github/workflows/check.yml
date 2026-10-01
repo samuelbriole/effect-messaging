@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install dependencies
         uses: ./.github/actions/setup
       - run: pnpm check
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install dependencies
         uses: ./.github/actions/setup
       - run: pnpm circular
@@ -63,7 +63,7 @@ jobs:
           - 6222:6222
         options: --name nats
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Start JetStream # temporary hack because it is not possible to configure the entrypoint in services
         run: |
           chmod a+x ${{ github.workspace }}/.github/workflows/nats-entrypoint.sh

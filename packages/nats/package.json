@@ -1,27 +1,23 @@
 {
   "name": "@effect-messaging/nats",
-  "type": "module",
   "version": "0.7.6",
-  "license": "MIT",
   "description": "An NATS toolkit for Effect",
+  "keywords": [
+    "typescript",
+    "nats"
+  ],
   "homepage": "https://github.com/spiko-tech/effect-messaging",
+  "bugs": {
+    "url": "https://github.com/spiko-tech/effect-messaging/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/spiko-tech/effect-messaging.git",
     "directory": "packages/nats"
   },
-  "bugs": {
-    "url": "https://github.com/spiko-tech/effect-messaging/issues"
-  },
-  "tags": [
-    "typescript",
-    "nats"
-  ],
-  "keywords": [
-    "typescript",
-    "nats"
-  ],
+  "license": "MIT",
   "sideEffects": [],
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": "./src/index.ts",
@@ -39,6 +35,29 @@
     "AGENTS.md",
     "CLAUDE.md"
   ],
+  "scripts": {
+    "codegen": "node ../../scripts/codegen.mjs . 'src/**/index.ts'",
+    "build": "tsc -b tsconfig.json && pnpm babel",
+    "babel": "babel dist --plugins annotate-pure-calls --out-dir dist --source-maps",
+    "check": "tsc -b tsconfig.json",
+    "test": "vitest",
+    "coverage": "vitest --coverage"
+  },
+  "devDependencies": {
+    "@effect-messaging/core": "workspace:^",
+    "@effect/vitest": "4.0.0",
+    "@nats-io/jetstream": "^3.4.0",
+    "@nats-io/nats-core": "^3.4.0",
+    "@nats-io/transport-node": "^3.4.0",
+    "effect": "4.0.0"
+  },
+  "peerDependencies": {
+    "@effect-messaging/core": "workspace:^",
+    "@nats-io/jetstream": "^3.4.0",
+    "@nats-io/nats-core": "^3.4.0",
+    "@nats-io/transport-node": "^3.4.0",
+    "effect": "^4.0.0"
+  },
   "publishConfig": {
     "access": "public",
     "provenance": true,
@@ -51,27 +70,8 @@
       "./*/index": null
     }
   },
-  "scripts": {
-    "codegen": "node ../../scripts/codegen.mjs . 'src/**/index.ts'",
-    "build": "tsc -b tsconfig.json && pnpm babel",
-    "babel": "babel dist --plugins annotate-pure-calls --out-dir dist --source-maps",
-    "check": "tsc -b tsconfig.json",
-    "test": "vitest",
-    "coverage": "vitest --coverage"
-  },
-  "devDependencies": {
-    "@effect-messaging/core": "workspace:^",
-    "@effect/vitest": "4.0.0-rc.118",
-    "@nats-io/jetstream": "^3.4.0",
-    "@nats-io/nats-core": "^3.4.0",
-    "@nats-io/transport-node": "^3.4.0",
-    "effect": "4.0.0-rc.118"
-  },
-  "peerDependencies": {
-    "@effect-messaging/core": "workspace:^",
-    "@nats-io/jetstream": "^3.4.0",
-    "@nats-io/nats-core": "^3.4.0",
-    "@nats-io/transport-node": "^3.4.0",
-    "effect": "^4.0.0-rc.118"
-  }
+  "tags": [
+    "typescript",
+    "nats"
+  ]
 }

@@ -16,7 +16,7 @@ A message broker toolkit for Effect.
 - 🔭 Distributed tracing support (spans propagate from publishers to subscribers)
 
 > [!WARNING]
-> This branch targets Effect 4.0.0-rc.118. The stable `0.x` releases use Effect 3.
+> This branch targets Effect 4.0.0. The stable `0.x` releases use Effect 3.
 
 ## Quickstart Guide
 

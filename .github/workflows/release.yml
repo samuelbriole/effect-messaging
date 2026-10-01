@@ -36,7 +36,7 @@ jobs:
       id-token: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Start JetStream
         run: |
           chmod a+x ${{ github.workspace }}/.github/workflows/nats-entrypoint.sh
@@ -45,10 +45,12 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup
       - name: Create Release Pull Request or Publish
-        uses: changesets/action@v1
+        uses: changesets/action@v2.1.2
         with:
-          version: pnpm changeset-version
-          publish: pnpm changeset-publish
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version-script: pnpm changeset-version
+          publish-script: pnpm changeset-publish
+          push-with-git-cli: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: "" # https://github.com/changesets/changesets/issues/1152#issuecomment-3190884868
