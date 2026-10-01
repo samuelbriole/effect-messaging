@@ -30,7 +30,6 @@
     "skipLibCheck": true, // Skip type checking of third party libraries.
     "noErrorTruncation": true, // Do not truncate error messages.
     "types": [], // Disable automatic loading of `@types/*` packages.
-    "jsx": "react-jsx",
     "plugins": [{
       "name": "@effect/language-service",
       "namespaceImportPackages": ["effect", "@effect/*", "@effect-messaging/*"],
