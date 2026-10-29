@@ -1,5 +1,13 @@
 # @effect-messaging/nats
 
+## 1.0.0-beta.1
+
+### Patch Changes
+
+- [`96ceda9`](https://github.com/spiko-tech/effect-messaging/commit/96ceda92ad34b20cc7333bd0e1884795538ef574) Thanks [@samuelbriole](https://github.com/samuelbriole)! - Validate the messaging packages against Effect 4.1.0 and @effect/vitest 4.1.0; refresh compatible development dependencies.
+- Updated dependencies [[`96ceda9`](https://github.com/spiko-tech/effect-messaging/commit/96ceda92ad34b20cc7333bd0e1884795538ef574)]:
+  - @effect-messaging/core@1.0.0-beta.1
+
 ## 1.0.0-beta.0
 
 ### Major Changes
